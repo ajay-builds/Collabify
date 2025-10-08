@@ -1,0 +1,55 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Colabify - Connect Freelancers & Recruiters{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>Welcome to Colabify</h1>
+        <p class="hero-subtitle">The platform that connects talented freelancers with innovative recruiters</p>
+        
+        <div class="hero-buttons">
+            <a href="{{ url_for('main.register') }}" class="btn btn-primary">Get Started</a>
+            <a href="{{ url_for('main.login') }}" class="btn btn-secondary">Login</a>
+        </div>
+    </div>
+</div>
+
+<section class="features">
+    <div class="container">
+        <h2>Why Choose Colabify?</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>For Freelancers</h3>
+                <ul>
+                    <li>Find quality projects that match your skills</li>
+                    <li>Set your own rates and terms</li>
+                    <li>Build your professional portfolio</li>
+                    <li>Connect with top recruiters</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>For Recruiters</h3>
+                <ul>
+                    <li>Access a pool of talented professionals</li>
+                    <li>Post jobs and manage applications easily</li>
+                    <li>Find the perfect match for your projects</li>
+                    <li>Streamline your hiring process</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="container">
+        <h2>Ready to Start?</h2>
+        <p>Join thousands of freelancers and recruiters already using Colabify</p>
+        <a href="{{ url_for('main.register') }}" class="btn btn-primary">Sign Up Now</a>
+    </div>
+</section>
+{% endblock %}

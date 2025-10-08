@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Applications - Colabify{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>{% if current_user.user_type == 'recruiter' %}Received Applications{% else %}Your Applications{% endif %}</h2>
+    
+    {% if applications %}
+        <div class="applications-list">
+            {% for app in applications %}
+                <div class="application-card">
+                    {% if current_user.user_type == 'recruiter' %}
+                        <h4>{{ app.job.title }}</h4>
+                        <div class="application-info">
+                            <p><strong>Applicant:</strong> {{ app.freelancer.username }} ({{ app.freelancer.email }})</p>
+                            <p><strong>Proposed Rate:</strong> ${{ app.proposed_rate }}</p>
+                            <p><strong>Applied:</strong> {{ app.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-{{ app.status }}">{{ app.status.title() }}</span></p>
+                        </div>
+                        <div class="cover-letter">
+                            <h5>Cover Letter:</h5>
+                            <p>{{ app.cover_letter }}</p>
+                        </div>
+                        
+                        <div class="application-actions">
+                            {% if app.status == 'pending' %}
+                                <a href="{{ url_for('main.update_application', app_id=app.id, action='accept') }}" 
+                                   class="btn btn-success">Accept</a>
+                                <a href="{{ url_for('main.update_application', app_id=app.id, action='reject') }}" 
+                                   class="btn btn-danger">Reject</a>
+                            {% endif %}
+                            <a href="{{ url_for('main.new_conversation', user_id=app.freelancer_id) }}" 
+                               class="btn btn-primary">Message {{ app.freelancer.username }}</a>
+                        </div>
+                    {% else %}
+                        <h4>{{ app.job.title }}</h4>
+                        <div class="application-info">
+                            <p><strong>Recruiter:</strong> {{ app.job.recruiter.username }}</p>
+                            <p><strong>Your Proposed Rate:</strong> ${{ app.proposed_rate }}</p>
+                            <p><strong>Applied:</strong> {{ app.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-{{ app.status }}">{{ app.status.title() }}</span></p>
+                        </div>
+                        <div class="job-details">
+                            <p><strong>Job Description:</strong></p>
+                            <p>{{ app.job.description }}</p>
+                            <p><strong>Budget:</strong> ${{ app.job.budget }} | <strong>Duration:</strong> {{ app.job.duration }}</p>
+                        </div>
+                        <div class="application-actions">
+                            <a href="{{ url_for('main.new_conversation', user_id=app.job.recruiter_id) }}" 
+                               class="btn btn-primary">Message {{ app.job.recruiter.username }}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">
+            {% if current_user.user_type == 'recruiter' %}
+                No applications received yet.
+            {% else %}
+                You haven't applied to any jobs yet. <a href="{{ url_for('main.dashboard') }}">Browse available jobs</a>
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

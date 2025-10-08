@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Colabify - Connect Freelancers & Recruiters{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Colabify" class="logo">
+                <span>Colabify</span>
+            </div>
+            <ul class="nav-menu">
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    {% if current_user.user_type == 'recruiter' %}
+                        <li><a href="{{ url_for('main.new_job') }}">Post Job</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('main.applications') }}">Applications</a></li>
+                    <li><a href="{{ url_for('main.messages') }}">
+                        Messages
+                        {% if current_user.unread_messages_count > 0 %}
+                            <span class="badge">{{ current_user.unread_messages_count }}</span>
+                        {% endif %}
+                    </a></li>
+                    <li><a href="{{ url_for('main.notifications') }}">
+                        Notifications
+                        {% set unread_count = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+                        {% if unread_count > 0 %}
+                            <span class="badge">{{ unread_count }}</span>
+                        {% endif %}
+                    </a></li>
+                    <li><span class="user-type">{{ current_user.user_type.title() }}</span></li>
+                    <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('main.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('main.register') }}" class="btn-primary">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                            <button onclick="this.parentElement.remove()" class="close">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Colabify. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

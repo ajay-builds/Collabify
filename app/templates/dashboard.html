@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Colabify{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Welcome, {{ current_user.username }}!</h2>
+    
+    {% if current_user.user_type == 'recruiter' %}
+        <div class="dashboard-header">
+            <h3>Your Posted Jobs</h3>
+            <a href="{{ url_for('main.new_job') }}" class="btn btn-primary">Post New Job</a>
+        </div>
+        
+        {% if jobs %}
+            <div class="job-grid">
+                {% for job in jobs %}
+                    <div class="job-card">
+                        <h4>{{ job.title }}</h4>
+                        <p class="job-meta">
+                            <span>Budget: ${{ job.budget }}</span> | 
+                            <span>Duration: {{ job.duration }}</span> | 
+                            <span>Status: {{ job.status.title() }}</span>
+                        </p>
+                        <p>{{ job.description[:200] }}{% if job.description|length > 200 %}...{% endif %}</p>
+                        <p class="job-skills">Skills: {{ job.skills_required }}</p>
+                        <div class="job-stats">
+                            <span>Applications: {{ job.applications|length }}</span>
+                            <span>Posted: {{ job.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">You haven't posted any jobs yet. <a href="{{ url_for('main.new_job') }}">Post your first job</a></p>
+        {% endif %}
+        
+    {% else %}
+        <h3>Available Jobs</h3>
+        
+        {% if jobs %}
+            <div class="job-grid">
+                {% for job in jobs %}
+                    <div class="job-card">
+                        <h4>{{ job.title }}</h4>
+                        <p class="job-meta">
+                            <span>Budget: ${{ job.budget }}</span> | 
+                            <span>Duration: {{ job.duration }}</span> | 
+                            <span>Location: {{ job.location }}</span>
+                        </p>
+                        <p>{{ job.description[:200] }}{% if job.description|length > 200 %}...{% endif %}</p>
+                        <p class="job-skills">Skills: {{ job.skills_required }}</p>
+                        <p class="job-recruiter">Posted by: {{ job.recruiter.username }}</p>
+                        
+                        {% if job.id in applied_job_ids %}
+                            <button class="btn btn-secondary" disabled>Already Applied</button>
+                        {% else %}
+                            <button class="btn btn-primary apply-btn" onclick="showApplyForm('{{job.id}}')">Apply Now</button>
+                            
+                            <div id="apply-form-{{ job.id }}" class="apply-form" style="display:none;">
+                                <form method="POST" action="{{ url_for('main.apply_job', job_id=job.id) }}">
+                                    <div class="form-group">
+                                        <label>Cover Letter</label>
+                                        <textarea name="cover_letter" class="form-control" rows="4" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Proposed Rate ($)</label>
+                                        <input type="number" name="proposed_rate" class="form-control" step="0.01" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                                    <button type="button" class="btn btn-secondary" onclick="hideApplyForm('{{ job.id }}')">Cancel</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">No jobs available at the moment. Check back later!</p>
+        {% endif %}
+    {% endif %}
+</div>
+
+<script>
+function showApplyForm(jobId) {
+    document.getElementById('apply-form-' + jobId).style.display = 'block';
+}
+
+function hideApplyForm(jobId) {
+    document.getElementById('apply-form-' + jobId).style.display = 'none';
+}
+</script>
+{% endblock %}

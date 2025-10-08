@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ other_user.username }} - Colabify{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h3>{{ other_user.username }}</h3>
+                <span class="user-type-badge">{{ other_user.user_type.title() }}</span>
+            </div>
+            <a href="{{ url_for('main.messages') }}" class="btn btn-secondary">Back to Messages</a>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}">
+                        <div class="message-content">
+                            <p>{{ message.content }}</p>
+                            <span class="message-time">{{ message.created_at.strftime('%b %d, %H:%M') }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 20px;">
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="chat-input-container">
+            <form id="message-form" method="POST" action="{{ url_for('main.send_message', conversation_id=conversation.id) }}">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        name="content" 
+                        class="form-control" 
+                        placeholder="Type your message..." 
+                        rows="2"></textarea>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of messages
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+
+// Scroll to bottom on page load
+window.addEventListener('load', function() {
+    setTimeout(scrollToBottom, 100);
+});
+
+// Handle form submission
+document.getElementById('message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const messageInput = document.getElementById('message-input');
+    const content = messageInput.value.trim();
+    
+    if (!content) {
+        alert('Please enter a message');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('content', content);
+    
+    // Disable button while sending
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        }
+        throw new Error('Failed to send message');
+    })
+    .then(html => {
+        // Clear input
+        messageInput.value = '';
+        
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send';
+        
+        // Reload the page to show new message
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to send message. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send';
+    });
+});
+
+// Handle Enter key to send message (Shift+Enter for new line)
+document.getElementById('message-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('message-form').dispatchEvent(new Event('submit'));
+    }
+});
+
+// Auto-refresh messages every 5 seconds
+let lastMessageId = {{ messages[-1].id if messages else 0 }};
+
+function fetchNewMessages() {
+    fetch("{{ url_for('main.fetch_messages', conversation_id=conversation.id) }}?last_message_id=" + lastMessageId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                const chatMessages = document.getElementById('chat-messages');
+                
+                // Remove empty state if exists
+                const emptyState = chatMessages.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                
+                data.messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message ' + (msg.sender_id === {{ current_user.id }} ? 'message-sent' : 'message-received');
+                    
+                    messageDiv.innerHTML = `
+                        <div class="message-content">
+                            <p>${escapeHtml(msg.content)}</p>
+                            <span class="message-time">${msg.created_at}</span>
+                        </div>
+                    `;
+                    
+                    chatMessages.appendChild(messageDiv);
+                    lastMessageId = msg.id;
+                });
+                
+                scrollToBottom();
+            }
+        })
+        .catch(error => console.error('Error fetching messages:', error));
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Poll for new messages every 5 seconds
+setInterval(fetchNewMessages, 5000);
+</script>
+{% endblock %}

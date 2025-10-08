@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Colabify{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Messages</h2>
+    
+    {% if conversations %}
+        <div class="conversations-list">
+            {% for conv in conversations %}
+                {% set other_user = conv.get_other_user(current_user.id) %}
+                {% set last_message = conv.get_last_message() %}
+                <a href="{{ url_for('main.conversation', conversation_id=conv.id) }}" class="conversation-card">
+                    <div class="conversation-header">
+                        <div class="conversation-user">
+                            <strong>{{ other_user.username }}</strong>
+                            <span class="user-type-badge">{{ other_user.user_type.title() }}</span>
+                        </div>
+                        <span class="conversation-time">
+                            {% if last_message %}
+                                {{ last_message.created_at.strftime('%b %d, %H:%M') }}
+                            {% else %}
+                                {{ conv.created_at.strftime('%b %d, %H:%M') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if last_message %}
+                        <div class="conversation-preview">
+                            <span class="message-sender">
+                                {% if last_message.sender_id == current_user.id %}You: {% endif %}
+                            </span>
+                            {{ last_message.content[:100] }}{% if last_message.content|length > 100 %}...{% endif %}
+                        </div>
+                    {% else %}
+                        <div class="conversation-preview">No messages yet</div>
+                    {% endif %}
+                    {% set unread = conv.messages.filter_by(receiver_id=current_user.id, is_read=False).count() %}
+                    {% if unread > 0 %}
+                        <span class="unread-badge">{{ unread }}</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No conversations yet.</p>
+            <p>Start a conversation with a freelancer or recruiter from their profile or job posting.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
