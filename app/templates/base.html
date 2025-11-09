@@ -15,24 +15,31 @@
             </div>
             <ul class="nav-menu">
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-                    {% if current_user.user_type == 'recruiter' %}
-                        <li><a href="{{ url_for('main.new_job') }}">Post Job</a></li>
+                    {% if current_user.user_type == 'admin' %}
+                        <li><a href="{{ url_for('main.admin_dashboard') }}">Admin Dashboard</a></li>
+                        <li><a href="{{ url_for('main.admin_users') }}">Users</a></li>
+                        <li><a href="{{ url_for('main.admin_jobs') }}">Jobs</a></li>
+                        <li><a href="{{ url_for('main.admin_email_logs') }}">Email Logs</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        {% if current_user.user_type == 'recruiter' %}
+                            <li><a href="{{ url_for('main.new_job') }}">Post Job</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('main.applications') }}">Applications</a></li>
+                        <li><a href="{{ url_for('main.messages') }}">
+                            Messages
+                            {% if current_user.unread_messages_count > 0 %}
+                                <span class="badge">{{ current_user.unread_messages_count }}</span>
+                            {% endif %}
+                        </a></li>
+                        <li><a href="{{ url_for('main.notifications') }}">
+                            Notifications
+                            {% set unread_count = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
+                            {% if unread_count > 0 %}
+                                <span class="badge">{{ unread_count }}</span>
+                            {% endif %}
+                        </a></li>
                     {% endif %}
-                    <li><a href="{{ url_for('main.applications') }}">Applications</a></li>
-                    <li><a href="{{ url_for('main.messages') }}">
-                        Messages
-                        {% if current_user.unread_messages_count > 0 %}
-                            <span class="badge">{{ current_user.unread_messages_count }}</span>
-                        {% endif %}
-                    </a></li>
-                    <li><a href="{{ url_for('main.notifications') }}">
-                        Notifications
-                        {% set unread_count = current_user.notifications|selectattr('is_read', 'equalto', False)|list|length %}
-                        {% if unread_count > 0 %}
-                            <span class="badge">{{ unread_count }}</span>
-                        {% endif %}
-                    </a></li>
                     <li><span class="user-type">{{ current_user.user_type.title() }}</span></li>
                     <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
                 {% else %}
@@ -63,7 +70,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2025 Colabify. All rights reserved.</p>
+            <p>&copy; 2024 Colabify. All rights reserved.</p>
         </div>
     </footer>
 </body>

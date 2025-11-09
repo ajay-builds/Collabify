@@ -15,7 +15,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255))
     user_type = db.Column(db.String(20), nullable=False)  # 'freelancer' or 'recruiter'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     
     # Relationships
     jobs_posted = db.relationship('Job', backref='recruiter', lazy=True, foreign_keys='Job.recruiter_id')
@@ -48,8 +48,8 @@ class Job(db.Model):
     location = db.Column(db.String(100))
     status = db.Column(db.String(20), default='open')  # open, in_progress, completed, cancelled
     recruiter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.now)
     
     # Relationships
     applications = db.relationship('Application', backref='job', lazy=True, cascade='all, delete-orphan')
@@ -63,8 +63,8 @@ class Application(db.Model):
     cover_letter = db.Column(db.Text)
     proposed_rate = db.Column(db.Float)
     status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -74,7 +74,7 @@ class Notification(db.Model):
     message = db.Column(db.String(500), nullable=False)
     type = db.Column(db.String(50))  # application_received, application_accepted, etc.
     is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
 
 class Conversation(db.Model):
     __tablename__ = 'conversations'
@@ -83,7 +83,7 @@ class Conversation(db.Model):
     user1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.now)
     
     # Relationships
     messages = db.relationship('Message', backref='conversation', lazy='dynamic', cascade='all, delete-orphan')
@@ -111,7 +111,7 @@ class Message(db.Model):
     receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     
     def __repr__(self):
         return f'<Message from {self.sender_id} to {self.receiver_id}>'
